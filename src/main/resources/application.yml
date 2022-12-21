@@ -12,9 +12,13 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     database: mysql
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 server:
   servlet:
     encoding:
       force-response: true
+
+jwt:
+  token:
+    secret: hello
 

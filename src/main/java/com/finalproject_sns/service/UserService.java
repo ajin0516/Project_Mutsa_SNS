@@ -6,7 +6,9 @@ import com.finalproject_sns.domain.dto.UserJoinRequest;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.UserRepository;
+import com.finalproject_sns.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,11 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
+
+    @Value("${jwt.token.secret}")
+    private String secretKey;
+
+    private long expireTimeMs = 1000 * 60 * 60L;
 
     public UserDto join(UserJoinRequest requestDto) {
 
@@ -47,8 +54,6 @@ public class UserService {
         }
 
         // token 발행
-
-
-        return "";
+        return JwtTokenUtil.createToken(userName, secretKey, expireTimeMs);
     }
 }
