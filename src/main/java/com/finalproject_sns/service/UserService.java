@@ -7,6 +7,7 @@ import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
 
     public UserDto join(UserJoinRequest requestDto) {
 
@@ -24,12 +26,29 @@ public class UserService {
                 });
 
         // 회원가입
-        User saveUser = userRepository.save(requestDto.toEntity());
+        User saveUser = userRepository.save(requestDto.toEntity(encoder.encode(requestDto.getPassword())));
 
         return  UserDto.builder()
                 .id(saveUser.getId())
                 .userName(saveUser.getUserName())
                 .build();
 
+    }
+
+    public String login(String userName, String password) {
+        // username 여부 확인
+        User user = userRepository.findByUserName(userName).orElseThrow(
+                ()-> new UserAppException(ErrorCode.USERNAME_NOT_FOUND,userName + "님은 가입한적이 없습니다")
+        );
+
+        // password 일치 여부 확인
+        if(!encoder.matches(password,user.getPassword())){
+            throw new UserAppException(ErrorCode.INVALID_PASSWORD, "password가 잘못 됐습니다");
+        }
+
+        // token 발행
+
+
+        return "";
     }
 }
