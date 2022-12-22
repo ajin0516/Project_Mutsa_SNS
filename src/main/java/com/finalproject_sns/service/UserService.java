@@ -8,12 +8,14 @@ import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.UserRepository;
 import com.finalproject_sns.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -25,7 +27,6 @@ public class UserService {
     private long expireTimeMs = 1000 * 60 * 60L;
 
     public UserDto join(UserJoinRequest requestDto) {
-
         // 회원 중복 체크 -> 중복이면 Exception 발생
         userRepository.findByUserName(requestDto.getUserName())
                 .ifPresent( user -> {
@@ -55,5 +56,10 @@ public class UserService {
 
         // token 발행
         return JwtTokenUtil.createToken(userName, secretKey, expireTimeMs);
+    }
+
+    public User getUserByUserName(String userName) {
+        return userRepository.findByUserName(userName)
+                .orElseThrow(() -> new UserAppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다"));
     }
 }
