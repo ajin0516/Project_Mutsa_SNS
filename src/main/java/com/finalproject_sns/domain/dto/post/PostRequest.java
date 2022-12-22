@@ -14,7 +14,6 @@ public class PostRequest {
     private String title;
     private String body;
 
-
     public Post toEntity(User user) {
         return Post.builder()
                 .title(this.title)

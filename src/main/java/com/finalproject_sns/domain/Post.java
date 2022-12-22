@@ -1,9 +1,6 @@
 package com.finalproject_sns.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -14,7 +11,9 @@ import static javax.persistence.FetchType.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class Post extends BaseEntity {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")

@@ -5,13 +5,15 @@ import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.dto.post.PostDto;
 import com.finalproject_sns.domain.dto.post.PostRequest;
-import com.finalproject_sns.domain.dto.user.UserDto;
+import com.finalproject_sns.domain.dto.post.PostSearchRequest;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 
 @Service
@@ -32,6 +34,21 @@ public class PostService {
                 .id(savePost.getId())
                 .title(savePost.getTitle())
                 .body(savePost.getBody())
+                .build();
+    }
+
+    public PostSearchRequest findById(Long postId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        Post post = postOptional.orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
+
+
+        return PostSearchRequest.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .body(post.getBody())
+                .userName(post.getUser().getUserName())
+                .createAt(post.getCreateAt())
+                .lastModifiedAt(post.getLastModifiedAt())
                 .build();
     }
 }
