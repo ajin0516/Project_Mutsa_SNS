@@ -17,7 +17,7 @@ public class PostController {
     @PostMapping
     public Response<PostResponse> write(@RequestBody PostRequest postRequest, Authentication authentication) {
         String userName = authentication.getName();
-        PostDto postDto = postService.create(postRequest, userName);
+        PostRequest postDto = postService.create(postRequest, userName);
         return Response.success(new PostResponse("포스트 등록 완료", postDto.getId()));
     }
 

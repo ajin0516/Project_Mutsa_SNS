@@ -3,19 +3,23 @@ package com.finalproject_sns.domain.dto.post;
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostRequest {
 
+    private Long id;
     private String title;
     private String body;
 
     public Post toEntity(User user) {
         return Post.builder()
+                .id(this.id)
                 .title(this.title)
                 .body(this.body)
                 .user(user)
