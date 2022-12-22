@@ -1,4 +1,4 @@
-package com.finalproject_sns.domain.dto;
+package com.finalproject_sns.domain.dto.user;
 
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.UserRole;

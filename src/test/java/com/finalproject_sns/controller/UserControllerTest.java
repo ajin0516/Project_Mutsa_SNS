@@ -1,9 +1,8 @@
 package com.finalproject_sns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject_sns.domain.dto.UserDto;
-import com.finalproject_sns.domain.dto.UserJoinRequest;
-import com.finalproject_sns.domain.dto.UserLoginResponse;
+import com.finalproject_sns.domain.dto.user.UserDto;
+import com.finalproject_sns.domain.dto.user.UserJoinRequest;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.service.UserService;
@@ -17,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

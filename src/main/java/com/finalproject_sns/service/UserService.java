@@ -1,8 +1,8 @@
 package com.finalproject_sns.service;
 
 import com.finalproject_sns.domain.User;
-import com.finalproject_sns.domain.dto.UserDto;
-import com.finalproject_sns.domain.dto.UserJoinRequest;
+import com.finalproject_sns.domain.dto.user.UserDto;
+import com.finalproject_sns.domain.dto.user.UserJoinRequest;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.UserRepository;

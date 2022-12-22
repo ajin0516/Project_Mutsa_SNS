@@ -1,7 +1,7 @@
 package com.finalproject_sns.controller;
 
 import com.finalproject_sns.domain.Response;
-import com.finalproject_sns.domain.dto.*;
+import com.finalproject_sns.domain.dto.user.*;
 import com.finalproject_sns.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
