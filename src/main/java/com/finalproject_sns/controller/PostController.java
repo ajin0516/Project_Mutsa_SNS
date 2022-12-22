@@ -1,6 +1,5 @@
 package com.finalproject_sns.controller;
 
-
 import com.finalproject_sns.domain.Response;
 import com.finalproject_sns.domain.dto.post.*;
 import com.finalproject_sns.service.PostService;
