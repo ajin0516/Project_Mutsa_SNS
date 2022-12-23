@@ -11,6 +11,8 @@ import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -40,7 +42,6 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         Post post = postOptional.orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
-
         return PostSearchResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -49,5 +50,11 @@ public class PostService {
                 .createAt(post.getCreateAt())
                 .lastModifiedAt(post.getLastModifiedAt())
                 .build();
+    }
+
+    public Page<PostSearchResponse> findAllPost(Pageable pageable) {
+        Page<Post> findAll = postRepository.findAll(pageable);
+        Page<PostSearchResponse> postDtoList = PostSearchResponse.toDtoList(findAll);
+        return postDtoList;
     }
 }
