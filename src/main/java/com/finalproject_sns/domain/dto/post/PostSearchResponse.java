@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @AllArgsConstructor
-public class PostSearchRequest {
+public class PostSearchResponse {
 
     private Long id;
     private String title;

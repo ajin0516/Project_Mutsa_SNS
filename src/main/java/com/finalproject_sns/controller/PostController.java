@@ -17,13 +17,13 @@ public class PostController {
     @PostMapping
     public Response<PostResponse> write(@RequestBody PostRequest postRequest, Authentication authentication) {
         String userName = authentication.getName();
-        PostRequest postDto = postService.create(postRequest, userName);
-        return Response.success(new PostResponse("포스트 등록 완료", postDto.getId()));
+        PostResponse postResponse = postService.create(postRequest, userName);
+        return Response.success(postResponse);
     }
 
     @GetMapping("/{postId}")
-    public Response<PostSearchRequest> getPost(@PathVariable Long postId) {
-        PostSearchRequest postSearchRequest = postService.findById(postId);
-        return Response.success(postSearchRequest);
+    public Response<PostSearchResponse> getPost(@PathVariable Long postId) {
+        PostSearchResponse postSearchResponse = postService.findById(postId);
+        return Response.success(postSearchResponse);
     }
 }
