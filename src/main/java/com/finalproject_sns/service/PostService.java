@@ -62,10 +62,10 @@ public class PostService {
 
     public PostResponse update(PostRequest request, Long postId, String userName) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
-        User user = userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+        userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
         // 작성자가 아닐 떄
-        if (!post.getUser().getUserName().equals(request.toEntity(user).getUser().getUserName())) {
+        if (!post.getUser().getUserName().equals(userName)) {
             throw new UserAppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
         }
         post.update(request.getTitle(),request.getBody());
@@ -79,7 +79,7 @@ public class PostService {
 
     public PostResponse deletePost(Long postId, String userName) {
         // user 존재하지 않을 때
-        User user = userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+        userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
         // 게시글 존재하지 않을 떄
         Post post = postRepository.findById(postId).orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
