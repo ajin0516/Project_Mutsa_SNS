@@ -13,13 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostRequest {
 
-    private Long id;
     private String title;
     private String body;
 
     public Post toEntity(User user) {
         return Post.builder()
-                .id(this.id)
                 .title(this.title)
                 .body(this.body)
                 .user(user)
