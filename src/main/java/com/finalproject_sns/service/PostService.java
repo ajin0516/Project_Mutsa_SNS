@@ -26,11 +26,11 @@ public class PostService {
     private final UserRepository userRepository;
 
     public PostResponse create(PostRequest postRequest, String userName) {
-        // user가 존재하지 않을 때
+        // user 존재하지 않을 때
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
-        // user가 존재하면 post save
+        // user 존재하면 save
         Post savePost = postRepository.save(postRequest.toEntity(user));
         return PostResponse.builder()
                 .postId(savePost.getId())
@@ -40,6 +40,8 @@ public class PostService {
 
     public PostSearchResponse findById(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
+
+        // 존재하지 않는 게시글
         Post post = postOptional.orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
         return PostSearchResponse.builder()
@@ -56,5 +58,34 @@ public class PostService {
         Page<Post> findAll = postRepository.findAll(pageable);
         Page<PostSearchResponse> postDtoList = PostSearchResponse.toDtoList(findAll);
         return postDtoList;
+    }
+
+    public PostResponse update(PostRequest request, Long postId, String userName) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
+        User user = userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+        if (post.getUser().getUserName() != request.toEntity(user).getUser().getUserName()) {
+            throw new UserAppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
+        }
+        post.update(request.getTitle(),request.getBody());
+        postRepository.save(post);
+        return PostResponse.builder()
+                .message("포스트 수정 완료")
+                .postId(postId)
+                .build();
+    }
+
+
+    public PostResponse deletePost(Long postId, String userName) {
+        // user 존재하지 않을 때
+        userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+
+        // 게시글 존재하지 않을 떄
+        postRepository.findById(postId).orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
+
+        postRepository.deleteById(postId);
+        return PostResponse.builder()
+                .postId(postId)
+                .message("포스트 삭제 완료")
+                .build();
     }
 }

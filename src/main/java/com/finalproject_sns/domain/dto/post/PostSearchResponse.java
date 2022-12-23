@@ -2,7 +2,6 @@ package com.finalproject_sns.domain.dto.post;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.finalproject_sns.domain.Post;
-import com.finalproject_sns.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-@AllArgsConstructor
+
 public class PostSearchResponse {
 
     private Long id;
@@ -23,6 +22,15 @@ public class PostSearchResponse {
     private LocalDateTime createAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime lastModifiedAt;
+
+    public PostSearchResponse(Long id, String title, String body, String userName, LocalDateTime createAt, LocalDateTime lastModifiedAt) {
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.userName = userName;
+        this.createAt = createAt;
+        this.lastModifiedAt = lastModifiedAt;
+    }
 
     /* Page<Post> -> Page<Dto> 변환처리 */
     public static Page<PostSearchResponse> toDtoList(Page<Post> postList) {
@@ -36,4 +44,8 @@ public class PostSearchResponse {
                 .build());
         return postDtoList;
     }
+
+
+
+
 }
