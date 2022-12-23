@@ -48,7 +48,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    public Response<PostResponse> delete(@PathVariable Long postId, Authentication authentication) {
+    public Response<PostResponse> delete(@PathVariable Long postId, PostRequest postRequest,Authentication authentication) {
         String userName = authentication.getName();
         PostResponse deletePost = postService.deletePost(postId, userName);
         return Response.success(deletePost);
