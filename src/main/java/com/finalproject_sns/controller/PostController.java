@@ -29,13 +29,13 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public Response<PostSearchResponse> getPost(@PathVariable Long postId) {
+    public Response<PostSearchResponse> findOnePost(@PathVariable Long postId) {
         PostSearchResponse postSearchResponse = postService.findById(postId);
         return Response.success(postSearchResponse);
     }
 
     @GetMapping
-    public Response<Page<PostSearchResponse>> getPostList(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public Response<Page<PostSearchResponse>> findAllPost(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<PostSearchResponse> postDtoList = postService.findAllPost(pageable);
         return Response.success(postDtoList);
     }
