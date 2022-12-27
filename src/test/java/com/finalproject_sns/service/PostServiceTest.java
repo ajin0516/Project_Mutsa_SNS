@@ -3,6 +3,8 @@ package com.finalproject_sns.service;
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.dto.post.PostRequest;
+import com.finalproject_sns.domain.dto.post.PostResponse;
+import com.finalproject_sns.domain.dto.post.PostSearchResponse;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.UserAppException;
 import com.finalproject_sns.repository.PostRepository;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.OngoingStubbing;
 
 import java.util.Optional;
 
@@ -26,25 +29,6 @@ public class PostServiceTest {
     PostRepository postRepository = mock(PostRepository.class);
     UserRepository userRepository = mock(UserRepository.class);
 
-    private final Long USER_ID = 1L;
-    private final String USERNAME = "testUser";
-    private final String PASSWORD = "testPwd";
-    private final User USER = User.builder()
-            .id(USER_ID)
-            .userName(USERNAME)
-            .password(PASSWORD)
-            .build();
-
-    private final String TITLE = "testTitle";
-    private final String BODY = "testBody";
-    private final Long POST_ID = 1L;
-
-    private final Post POST = Post.builder()
-            .id(POST_ID)
-            .title(TITLE)
-            .body(BODY)
-            .user(USER)
-            .build();
 
 
     @BeforeEach
@@ -59,10 +43,10 @@ public class PostServiceTest {
         Post mockPost = mock(Post.class);
         User mockUser = mock(User.class);
 
-        when(userRepository.findByUserName(USERNAME)).thenReturn(Optional.of(mockUser));
+        when(userRepository.findByUserName(mockUser.getUserName())).thenReturn(Optional.of(mockUser));
         when(postRepository.save(any())).thenReturn(mockPost);
 
-        assertDoesNotThrow(() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), USERNAME));
+        assertDoesNotThrow(() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), mockUser.getUserName()));
     }
 
     @Test
@@ -70,12 +54,49 @@ public class PostServiceTest {
     void post_fail() {
 
         Post mockPost = mock(Post.class);
+        User mockUser = mock(User.class);
 
-        when(userRepository.findByUserName(USERNAME)).thenReturn(Optional.empty());
+        when(userRepository.findByUserName(mockUser.getUserName())).thenReturn(Optional.empty());
         when(postRepository.save(any())).thenReturn(mockPost);
 
-        UserAppException userAppException = assertThrows(UserAppException.class,() ->postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), USERNAME));
+        UserAppException userAppException = assertThrows(UserAppException.class,() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), mockUser.getUserName()));
 
-        assertEquals(ErrorCode.USERNAME_NOT_FOUND, userAppException.getErrorCode());
+        assertEquals(ErrorCode.USERNAME_NOT_FOUND,userAppException.getErrorCode());
     }
+
+    @Test
+    @DisplayName("단건 조회 성공")
+    void post_findOne_success() {
+
+        User user = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .title("조회")
+                .body("단건조회 테스트")
+                .user(user)
+                .build();
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        PostSearchResponse postDto = postService.findById(post.getId());
+        assertEquals(postDto.getUserName(), user.getUserName());
+    }
+
+    // 실패
+    @Test
+    @DisplayName("수정 실패 - 포스트 없음")
+    void post_modify_fail() {
+
+        Post mockPost = mock(Post.class);
+
+        when(postRepository.findById(mockPost.getId())).thenReturn(Optional.empty());
+
+        UserAppException userAppException1 = assertThrows(UserAppException.class, () -> postService.update(new PostRequest(mockPost.getTitle(),mockPost.getBody()),mockPost.getId(),mockPost.getUser().getUserName()));
+
+        assertEquals(ErrorCode.POST_NOT_FOUND, userAppException1.getErrorCode().getHttpStatus());
+    }
+
 }

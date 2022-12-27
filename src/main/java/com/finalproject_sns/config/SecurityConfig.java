@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .cors().and()
                 .authorizeRequests()
                 .antMatchers("/api/v1/users/join","/api/v1/users/login").permitAll()
+//                .antMatchers(HttpMethod.POST,"/api/v1/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated() // 모든 post요청 권한 막기
                 .and()
                 .sessionManagement()

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public PostResponse create(PostRequest postRequest, String userName) {
         // user 존재하지 않을 때
         User user = userRepository.findByUserName(userName)
@@ -60,6 +62,8 @@ public class PostService {
         return postDtoList;
     }
 
+
+    @Transactional
     public PostResponse update(PostRequest request, Long postId, String userName) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new UserAppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
         userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
@@ -77,6 +81,7 @@ public class PostService {
     }
 
 
+    @Transactional
     public PostResponse deletePost(Long postId, String userName) {
         // user 존재하지 않을 때
         userRepository.findByUserName(userName).orElseThrow(() -> new UserAppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
