@@ -1,12 +1,11 @@
 package com.finalproject_sns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.dto.post.PostRequest;
 import com.finalproject_sns.domain.dto.post.PostResponse;
 import com.finalproject_sns.domain.dto.post.PostSearchResponse;
 import com.finalproject_sns.exception.ErrorCode;
-import com.finalproject_sns.exception.UserAppException;
+import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -82,7 +80,7 @@ class PostControllerTest {
                 .body("안녕하세요")
                 .build();
 
-        when(postService.create(any(),any())).thenThrow(new UserAppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
+        when(postService.create(any(),any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
 
         mockMvc.perform(post("/api/v1/posts")
                         .with(csrf())
@@ -106,7 +104,7 @@ class PostControllerTest {
                 .lastModifiedAt(LocalDateTime.now())
                 .build();
 
-        when(postService.findById(any())).thenReturn(postSearchResponse);
+        when(postService.findOnePost(any())).thenReturn(postSearchResponse);
 
         mockMvc.perform(get("/api/v1/posts/1")
                         .with(csrf())
@@ -156,7 +154,7 @@ class PostControllerTest {
                 .body("안녕하세요")
                 .build();
 
-        when(postService.update(any(),any(),any())).thenThrow(new UserAppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
+        when(postService.update(any(),any(),any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
 
         mockMvc.perform(put("/api/v1/posts/1")
                         .with(csrf())
@@ -176,7 +174,7 @@ class PostControllerTest {
                 .body("안녕하세요")
                 .build();
 
-        when(postService.update(any(),any(),any())).thenThrow(new UserAppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
+        when(postService.update(any(),any(),any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"존재하지 않는 회원입니다."));
 
         mockMvc.perform(put("/api/v1/posts/1")
                         .with(csrf())
@@ -210,7 +208,7 @@ class PostControllerTest {
     @WithAnonymousUser // 권한 없음
     void post_delete_fail1() throws Exception {
 
-        when(postService.deletePost(any(), any())).thenThrow(new UserAppException(ErrorCode.INVALID_PERMISSION,""));
+        when(postService.deletePost(any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,""));
 
         mockMvc.perform(delete("/api/v1/posts/1")
                         .with(csrf()))
@@ -223,7 +221,7 @@ class PostControllerTest {
     @WithMockUser
     void post_delete_fail2() throws Exception {
 
-        when(postService.deletePost(any(), any())).thenThrow(new UserAppException(ErrorCode.INVALID_PERMISSION,""));
+        when(postService.deletePost(any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,""));
 
         mockMvc.perform(delete("/api/v1/posts/1")
                         .with(csrf()))
@@ -238,7 +236,7 @@ class PostControllerTest {
     void post_delete_fail3() throws Exception {
 
         when(postService.deletePost(any(), any()))
-                .thenThrow(new UserAppException(ErrorCode.DATABASE_ERROR, "데이터 베이스 에러"));
+                .thenThrow(new AppException(ErrorCode.DATABASE_ERROR, "데이터 베이스 에러"));
 
         mockMvc.perform(delete("/api/v1/posts/1")
                         .with(csrf()))

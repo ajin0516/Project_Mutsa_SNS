@@ -3,17 +3,14 @@ package com.finalproject_sns.service;
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.dto.post.PostRequest;
-import com.finalproject_sns.domain.dto.post.PostResponse;
 import com.finalproject_sns.domain.dto.post.PostSearchResponse;
 import com.finalproject_sns.exception.ErrorCode;
-import com.finalproject_sns.exception.UserAppException;
+import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.OngoingStubbing;
 
 import java.util.Optional;
 
@@ -59,9 +56,9 @@ public class PostServiceTest {
         when(userRepository.findByUserName(mockUser.getUserName())).thenReturn(Optional.empty());
         when(postRepository.save(any())).thenReturn(mockPost);
 
-        UserAppException userAppException = assertThrows(UserAppException.class,() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), mockUser.getUserName()));
+        AppException AppException = assertThrows(AppException.class,() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), mockUser.getUserName()));
 
-        assertEquals(ErrorCode.USERNAME_NOT_FOUND,userAppException.getErrorCode());
+        assertEquals(ErrorCode.USERNAME_NOT_FOUND,AppException.getErrorCode());
     }
 
     @Test
@@ -81,22 +78,133 @@ public class PostServiceTest {
                 .build();
 
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
-        PostSearchResponse postDto = postService.findById(post.getId());
+        PostSearchResponse postDto = postService.findOnePost(post.getId());
         assertEquals(postDto.getUserName(), user.getUserName());
     }
 
-    // 실패
     @Test
     @DisplayName("수정 실패 - 포스트 없음")
     void post_modify_fail() {
+        User user = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .title("수정")
+                .body("수정 테스트")
+                .user(user)
+                .build();
 
-        Post mockPost = mock(Post.class);
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
 
-        when(postRepository.findById(mockPost.getId())).thenReturn(Optional.empty());
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getId(),post.getUser().getUserName()));
 
-        UserAppException userAppException1 = assertThrows(UserAppException.class, () -> postService.update(new PostRequest(mockPost.getTitle(),mockPost.getBody()),mockPost.getId(),mockPost.getUser().getUserName()));
+        assertEquals(ErrorCode.POST_NOT_FOUND, AppException1.getErrorCode());
+    }
 
-        assertEquals(ErrorCode.POST_NOT_FOUND, userAppException1.getErrorCode().getHttpStatus());
+
+    @Test
+    @DisplayName("수정 실패 - 작성자!= 유저 ")
+    void post_modify_fail2() {
+        User user1 = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+
+        User user2 = User.builder()
+                .id(1L)
+                .userName("najin")
+                .password("1234")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .title("수정")
+                .body("수정 테스트")
+                .user(user1)
+                .build();
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(userRepository.findByUserName(user2.getUserName())).thenReturn(Optional.of(user2));
+
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user2.getUserName()));
+
+        assertEquals(ErrorCode.INVALID_PERMISSION, AppException1.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("수정 실패 - 유저 X ")
+    void post_modify_fail3() {
+        User user = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .title("수정")
+                .body("수정 테스트")
+                .user(user)
+                .build();
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.empty());
+
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user.getUserName()));
+
+        assertEquals(ErrorCode.USERNAME_NOT_FOUND, AppException1.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 실패 - 유저 X")
+    void post_delete_fail1() {
+        User user = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+
+        Post post = Post.builder()
+                .id(1L)
+                .title("수정")
+                .body("수정 테스트")
+                .user(user)
+                .build();
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.empty());
+
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.deletePost(post.getId(),post.getUser().getUserName()));
+
+        assertEquals(ErrorCode.USERNAME_NOT_FOUND, AppException1.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("삭제 실패 - 포스트 X")
+    void post_delete_fail2() {
+
+        User user = User.builder()
+                .id(1L)
+                .userName("ajin")
+                .password("1234")
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .title("수정")
+                .body("수정 테스트")
+                .user(user)
+                .build();
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+        when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.of(user));
+
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.deletePost(post.getId(),post.getUser().getUserName()));
+
+        assertEquals(ErrorCode.POST_NOT_FOUND, AppException1.getErrorCode());
     }
 
 }

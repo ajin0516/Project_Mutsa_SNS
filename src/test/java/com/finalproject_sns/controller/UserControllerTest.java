@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject_sns.domain.dto.user.UserDto;
 import com.finalproject_sns.domain.dto.user.UserJoinRequest;
 import com.finalproject_sns.exception.ErrorCode;
-import com.finalproject_sns.exception.UserAppException;
+import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class UserControllerTest {
                 .password(password)
                 .build();
 
-        when(userService.join(any())).thenThrow(new UserAppException(ErrorCode.DUPLICATED_USER_NAME,""));
+        when(userService.join(any())).thenThrow(new AppException(ErrorCode.DUPLICATED_USER_NAME,""));
         when(encoder.encode(password)).thenReturn("password-ok");
 
         mockMvc.perform(post("/api/v1/users/join")
@@ -92,7 +92,7 @@ class UserControllerTest {
                 .password("1234")
                 .build();
 
-        when(userService.login(any(), any())).thenThrow(new UserAppException(ErrorCode.USERNAME_NOT_FOUND,userJoinRequest.getUserName() + "은 존재하지 않는 ID입니다"));
+        when(userService.login(any(), any())).thenThrow(new AppException(ErrorCode.USERNAME_NOT_FOUND,userJoinRequest.getUserName() + "은 존재하지 않는 ID입니다"));
 
         mockMvc.perform(post("/api/v1/users/login")
                         .with(csrf())
@@ -112,7 +112,7 @@ class UserControllerTest {
                 .password("1234")
                 .build();
 
-        when(userService.login(any(), any())).thenThrow(new UserAppException(ErrorCode.INVALID_PASSWORD, "password가 일치하지 않습니다."));
+        when(userService.login(any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PASSWORD, "password가 일치하지 않습니다."));
 
         mockMvc.perform(post("/api/v1/users/login")
                         .with(csrf())
