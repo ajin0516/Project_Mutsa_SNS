@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-
+@AllArgsConstructor
 public class PostSearchResponse {
 
     private Long id;
@@ -23,16 +23,21 @@ public class PostSearchResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime lastModifiedAt;
 
-    public PostSearchResponse(Long id, String title, String body, String userName, LocalDateTime createAt, LocalDateTime lastModifiedAt) {
-        this.id = id;
-        this.title = title;
-        this.body = body;
-        this.userName = userName;
-        this.createAt = createAt;
-        this.lastModifiedAt = lastModifiedAt;
+
+    /* Entity -> Dto 변환처리*/
+    public static PostSearchResponse toDto(Post post){
+            return PostSearchResponse.builder()
+            .id(post.getId())
+            .title(post.getTitle())
+            .body(post.getBody())
+            .userName(post.getUser().getUserName())
+            .createAt(post.getCreateAt())
+            .lastModifiedAt(post.getLastModifiedAt())
+            .build();
     }
 
     /* Page<Post> -> Page<Dto> 변환처리 */
+    /* List 로 받으면 변환이 더 간단  */
     public static Page<PostSearchResponse> toDtoList(Page<Post> postList) {
         Page<PostSearchResponse> postDtoList = postList.map( m -> PostSearchResponse.builder()
                 .id(m.getId())

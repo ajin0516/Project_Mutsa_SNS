@@ -1,8 +1,6 @@
 package com.finalproject_sns.controller;
 
-import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.Response;
-import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.dto.post.*;
 import com.finalproject_sns.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +28,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public Response<PostSearchResponse> findOnePost(@PathVariable Long postId) {
-        PostSearchResponse postSearchResponse = postService.findById(postId);
+        PostSearchResponse postSearchResponse = postService.findOnePost(postId);
         return Response.success(postSearchResponse);
     }
 

@@ -1,6 +1,7 @@
 package com.finalproject_sns.config;
 
 import com.finalproject_sns.domain.User;
+import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.service.UserService;
 import com.finalproject_sns.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+
             filterChain.doFilter(request, response);
             return;
         }
