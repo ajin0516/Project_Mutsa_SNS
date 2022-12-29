@@ -1,5 +1,7 @@
 package com.finalproject_sns.controller;
 
+import com.finalproject_sns.domain.dto.post.PostResponse;
+import com.finalproject_sns.service.HelloService;
 import com.finalproject_sns.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,10 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HelloController.class)
@@ -23,7 +26,7 @@ class HelloControllerTest {
     MockMvc mockMvc;
 
     @MockBean
-    PostService postService;
+    HelloService helloService;
 
     @Test
     @DisplayName("이름이 잘 나오는지 테스트")
@@ -42,10 +45,12 @@ class HelloControllerTest {
     @WithMockUser
     void sumOfDigit_success() throws Exception {
 
-        mockMvc.perform(get("/api/v1/1111")
+        when(helloService.sumOfDigit("111")).thenReturn("3");
+        mockMvc.perform(get("/api/v1/hello/111")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andDo(print());
+                .andExpect(content().string("3"));
     }
 }
