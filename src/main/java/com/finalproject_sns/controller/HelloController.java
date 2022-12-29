@@ -1,13 +1,18 @@
 package com.finalproject_sns.controller;
 
+import com.finalproject_sns.service.HelloService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/hello")
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class HelloController {
+
+    private final HelloService helloService;
 
     @GetMapping()
     public String hello() {
@@ -16,11 +21,7 @@ public class HelloController {
 
     @GetMapping("/{num}")
     public String sumOfDigit(@PathVariable String num) {
-        int sum = 0;
-        for (int i = 0; i < num.length(); i++) {
-            sum += num.charAt(i) - '0';
-        }
-        return String.valueOf(sum);
+        return helloService.sumOfDigit(num);
     }
 
 
