@@ -75,7 +75,7 @@ public class UserService {
         User changeUser = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
 
-        log.info("UserRole.ADMIN.name()={}",UserRole.ADMIN.name());
+        log.info("changeUser.getRole().name()={}",changeUser.getRole().name());
         log.info("admin.getRole()={}",admin.getRole());
         if(admin.getRole().name().equals(changeUser.getRole().name())) {
             throw new AppException(ErrorCode.INVALID_PERMISSION, changeUser.getUserName() + "님은 이미 관리자권한입니다.");
