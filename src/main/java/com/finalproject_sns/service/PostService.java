@@ -66,12 +66,7 @@ public class PostService {
         User user = userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
         // 해당 글 작성자나 ADMIN만 수정 가능
-        if (!post.getUser().getUserName().equals(userName) && !user.getRole().name().equals(UserRole.ADMIN.name())) {
-            log.info("!post.getUser().getUserName().equals(userName)={}",!post.getUser().getUserName().equals(userName));
-            log.info("!user.getRole().name().equals(UserRole.ADMIN.name()={}",!user.getRole().name().equals(UserRole.ADMIN.name()));
-            throw new AppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
-        }
-        log.info("=====if 벗어남====");
+        validateCheck(userName, post, user);
         log.info("!post.getUser().getUserName().equals(userName)={}",!post.getUser().getUserName().equals(userName));
         log.info("!user.getRole().name().equals(UserRole.ADMIN.name()={}",!user.getRole().name().equals(UserRole.ADMIN.name()));
 
@@ -83,7 +78,6 @@ public class PostService {
                 .build();
     }
 
-
     @Transactional
     public PostResponse deletePost(Long postId, String userName) {
         // user 존재하지 않을 때
@@ -93,15 +87,19 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
         // 해당 글 작성자나 ADMIN만 삭제 가능
-        if (!post.getUser().getUserName().equals(userName) && !user.getRole().name().equals(UserRole.ADMIN.name())) {
-            throw new AppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
-        }
+        validateCheck(userName, post, user);
 
         postRepository.deleteById(postId);
         return PostResponse.builder()
                 .message("포스트 삭제 완료")
                 .postId(postId)
                 .build();
+    }
+
+    private static void validateCheck(String userName, Post post, User user) {
+        if (!post.getUser().getUserName().equals(userName) && !user.getRole().name().equals(UserRole.ADMIN.name())) {
+            throw new AppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
+        }
     }
 
 
