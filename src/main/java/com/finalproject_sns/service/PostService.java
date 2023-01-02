@@ -3,6 +3,7 @@ package com.finalproject_sns.service;
 
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.UserRole;
 import com.finalproject_sns.domain.dto.post.PostRequest;
 import com.finalproject_sns.domain.dto.post.PostResponse;
 import com.finalproject_sns.domain.dto.post.PostSearchResponse;
@@ -59,12 +60,13 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
         // user 존재하지 않을 때
-        userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+        User user = userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
-        // 작성자가 아닐 떄
-        if (!post.getUser().getUserName().equals(userName)) {
+        // 작성자가 아닐 떄, user가 ADMIN이 아닐 때
+        if (!post.getUser().getUserName().equals(userName) && !user.getRole().name().equals(UserRole.ADMIN.name())) {
             throw new AppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
         }
+
         post.update(request.getTitle(),request.getBody());
         postRepository.save(post);
         return PostResponse.builder()
@@ -77,13 +79,13 @@ public class PostService {
     @Transactional
     public PostResponse deletePost(Long postId, String userName) {
         // user 존재하지 않을 때
-        userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+        User user = userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
         // 게시글 존재하지 않을 떄
         Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
-        // 작성자가 아닐 떄
-        if (!post.getUser().getUserName().equals(userName)) {
+        // 작성자가 아닐 떄, user가 ADMIN이 아닐 때
+        if (!post.getUser().getUserName().equals(userName) && !user.getRole().name().equals(UserRole.ADMIN.name())) {
             throw new AppException(ErrorCode.INVALID_PERMISSION,"사용자가 권한이 없습니다.");
         }
 
@@ -93,4 +95,6 @@ public class PostService {
                 .postId(postId)
                 .build();
     }
+
+
 }

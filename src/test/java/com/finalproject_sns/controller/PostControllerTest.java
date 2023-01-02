@@ -7,13 +7,17 @@ import com.finalproject_sns.domain.dto.post.PostSearchResponse;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.service.PostService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -22,7 +26,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,6 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PostController.class)
+//@MockBean(JpaMetamodelMappingContext.class) -> Application클래스에 @EnableJpaAuditing 적용
 class PostControllerTest {
 
     @MockBean
@@ -250,20 +257,23 @@ class PostControllerTest {
     @WithMockUser
     void post_list_success() throws Exception {
 
-        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createAt"));
-
-//        pageRequest.getSort()
-//        when(postService.findAllPost(any())).thenReturn()
-//                ,post.getUser().getUserName()
-//                ,post.getTitle()
-//        ,post.getBody()
-//        ,post.getCreateAt(),post.getLastModifiedAt());
 
         mockMvc.perform(get("/api/v1/posts")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(pageRequest)))
-                .andExpect(status().isOk())
-                .andDo(print());
+                        .param("page","0")
+                        .param("size","3")
+                        .param("sort","createAt,desc"))
+                .andExpect(status().isOk());
+
+        // Pageable 타입의 ArgumentCaptor 생성(저장)
+        ArgumentCaptor<Pageable> argumentCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        // 검증
+        verify(postService).findAllPost(argumentCaptor.capture());
+        // getValue() - 저장한 걸 사용
+        PageRequest pageRequest = (PageRequest) argumentCaptor.getValue();
+
+        assertEquals(Sort.by(Sort.Direction.DESC,"createAt"),pageRequest.getSort());
+        assertEquals(3,pageRequest.getPageSize());
+        assertEquals(0,pageRequest.getPageNumber());
     }
 }
