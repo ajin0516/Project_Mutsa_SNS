@@ -39,6 +39,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(errorCode.getHttpStatus().value());
 
+        // spring을 거치는 게 아니기 떄문에 한글처리를 위해서 필수
         response.getWriter().print(
                 objectMapper.writeValueAsString(
                         Response.error(errorCode.name(), errorCode.getMessage()))
