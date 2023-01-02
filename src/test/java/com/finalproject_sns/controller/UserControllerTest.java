@@ -3,6 +3,7 @@ package com.finalproject_sns.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject_sns.domain.dto.user.UserDto;
 import com.finalproject_sns.domain.dto.user.UserJoinRequest;
+import com.finalproject_sns.domain.dto.user.UserJoinResponse;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.service.UserService;
@@ -44,18 +45,21 @@ class UserControllerTest {
     @DisplayName("회원가입 성공")
     @WithMockUser
     void join_success() throws Exception {
-        UserJoinRequest userJoinRequest = UserJoinRequest.builder()
-                .userName("ajin")
-                .password("123")
-                .build();
+        UserJoinRequest userJoinRequest = new UserJoinRequest("test", "123");
 
-        when(userService.join(any())).thenReturn(mock(UserDto.class));
+        when(userService.join(any())).thenReturn(UserDto.builder()
+                        .id(1L)
+                .userName(userJoinRequest.getUserName())
+                .build());
 
         mockMvc.perform(post("/api/v1/users/join")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(userJoinRequest)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("SUCCESS"))
+                .andExpect(jsonPath("$.result.userId").value("1"))
+                .andExpect(jsonPath("$.result.userName").value("test"))
                 .andDo(print());
     }
 
@@ -66,12 +70,11 @@ class UserControllerTest {
 
         String password = "1234";
         UserJoinRequest userJoinRequest =UserJoinRequest.builder()
-                .userName("ajin")
+                .userName("test")
                 .password(password)
                 .build();
 
-        when(userService.join(any())).thenThrow(new AppException(ErrorCode.DUPLICATED_USER_NAME,""));
-        when(encoder.encode(password)).thenReturn("password-ok");
+        when(userService.join(any())).thenThrow(new AppException(ErrorCode.DUPLICATED_USER_NAME, userJoinRequest.getUserName() + "은 중복된 이름입니다."));
 
         mockMvc.perform(post("/api/v1/users/join")
                         .with(csrf())
