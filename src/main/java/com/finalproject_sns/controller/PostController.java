@@ -39,9 +39,9 @@ public class PostController {
     }
 
     @PutMapping("{postId}")
-    public Response<PostResponse> modify(@RequestBody PostRequest postRequest,@PathVariable Long postId, Authentication authentication) {
+    public Response<PostResponse> modify(@RequestBody PostModifyRequest postModifyRequest,@PathVariable Long postId, Authentication authentication) {
         String username = authentication.getName();
-        PostResponse updatePost = postService.update(postRequest, postId,username);
+        PostResponse updatePost = postService.update(postModifyRequest, postId,username);
         return Response.success(updatePost);
     }
 
