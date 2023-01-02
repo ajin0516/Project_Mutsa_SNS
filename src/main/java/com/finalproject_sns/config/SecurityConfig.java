@@ -1,6 +1,9 @@
 package com.finalproject_sns.config;
 
+import com.finalproject_sns.config.filter.JwtTokenFilter;
 import com.finalproject_sns.service.UserService;
+import com.finalproject_sns.utils.CustomAccessDeniedHandler;
+import com.finalproject_sns.utils.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,10 +33,20 @@ public class SecurityConfig {
                 .cors().and()
                 .authorizeRequests()
                 .antMatchers("/api/v1/users/join","/api/v1/users/login").permitAll()
+                .antMatchers(HttpMethod.DELETE,"/api/**").authenticated() // delete는 인가자만 허용
+                .antMatchers(HttpMethod.PUT,"/api/**").authenticated() // put는 인가자만 허용
                 .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated() // 모든 post요청 권한 막기
+                .antMatchers("/api/v1/users/*/role/change").access("hasRole('ADMIN')")
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .exceptionHandling()
+                /*
+                 401, 403 Exception 핸들링
+                 */
+//                .accessDeniedHandler(new CustomAccessDeniedHandler())
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .and()
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
                 .build();
