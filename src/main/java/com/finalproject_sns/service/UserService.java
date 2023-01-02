@@ -1,8 +1,10 @@
 package com.finalproject_sns.service;
 
 import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.UserRole;
 import com.finalproject_sns.domain.dto.user.UserDto;
 import com.finalproject_sns.domain.dto.user.UserJoinRequest;
+import com.finalproject_sns.domain.dto.user.UserRoleResponse;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.repository.UserRepository;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
@@ -63,4 +66,30 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다"));
     }
 
+    public UserRoleResponse changeRole(Long id, String userName) {
+        // 토큰을 통해 인증 된 회원 중 일치하는 name 없음
+        User admin = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
+
+        // id로 조회 시 존재 하지 않는 유저
+        User changeUser = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
+
+        log.info("UserRole.ADMIN.name()={}",UserRole.ADMIN.name());
+        log.info("admin.getRole()={}",admin.getRole());
+        if(admin.getRole().name().equals(changeUser.getRole().name())) {
+            throw new AppException(ErrorCode.INVALID_PERMISSION, changeUser.getUserName() + "님은 이미 관리자권한입니다.");
+        }
+        if (admin.getRole().name().equals(UserRole.ADMIN.name())) {
+            changeUser.upgradeAdmin(UserRole.ADMIN);
+        } else {
+            throw new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다");
+        }
+        userRepository.save(changeUser);
+
+        return UserRoleResponse.builder()
+                .message("관리자로 권한이 변경되었습니다.")
+                .userName(changeUser.getUserName())
+                .build();
+    }
 }

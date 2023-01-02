@@ -1,15 +1,14 @@
 package com.finalproject_sns.domain.dto.user;
 
+
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-@Builder
-public class UserJoinResponse {
+@NoArgsConstructor
+public class UserRoleRequest {
 
-    private Long userId;
-    private String userName;
-
+    private String role;
 }
