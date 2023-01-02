@@ -1,8 +1,8 @@
-package com.finalproject_sns.domain;
+package com.finalproject_sns.exception;
 
-import com.finalproject_sns.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
 
 @AllArgsConstructor
 @Getter
