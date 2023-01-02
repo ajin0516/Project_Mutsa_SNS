@@ -1,7 +1,6 @@
 package com.finalproject_sns.exception;
 
-import com.finalproject_sns.domain.ErrorResponse;
-import com.finalproject_sns.domain.Response;
+import com.finalproject_sns.domain.dto.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
