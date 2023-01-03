@@ -5,6 +5,7 @@ import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateRequest;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateResponse;
+import com.finalproject_sns.domain.dto.comment.list.CommentListResponse;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
 import com.finalproject_sns.exception.AppException;
@@ -14,7 +15,10 @@ import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -25,6 +29,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public CommentCreateResponse create(CommentCreateRequest commentCreateRequest, String userName, Long postId) {
 
         // 게시글 없을 때
@@ -39,6 +44,7 @@ public class CommentService {
         return CommentCreateResponse.of(saveComment);
     }
 
+    @Transactional
     public CommentUpdateResponse update(CommentUpdateRequest commentUpdateRequest, String userName, Long postId, Long id) {
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
@@ -59,5 +65,16 @@ public class CommentService {
         comment.update(commentUpdateRequest.getComment());
         commentRepository.save(comment);
         return CommentUpdateResponse.of(comment);
+    }
+
+    public Page<CommentListResponse> commentList(Long id, Pageable pageable) {
+
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "포스트가 존재하지 않습니다."));
+
+        log.info("post={}",post);
+        Page<Comment> byPostId = commentRepository.findByPostId(post.getId(), pageable);
+        Page<CommentListResponse> commentListResponses = CommentListResponse.toDtoList(byPostId);
+        return commentListResponses;
     }
 }
