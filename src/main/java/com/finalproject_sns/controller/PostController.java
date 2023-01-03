@@ -53,9 +53,9 @@ public class PostController {
     }
 
     @GetMapping("/my")
-    public Response<Page<MyFeedResponse>> findByUser(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable,Long id, Authentication authentication) {
+    public Response<Page<MyFeedResponse>> findByUser(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable, Authentication authentication) {
         String userName = authentication.getName();
-        Page<MyFeedResponse> findByUserId = postService.findByUser(id, userName, pageable);
+        Page<MyFeedResponse> findByUserId = postService.findByUser(userName, pageable);
         return Response.success(findByUserId);
     }
 }

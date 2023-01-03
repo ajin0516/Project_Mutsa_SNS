@@ -101,12 +101,12 @@ public class PostService {
         }
     }
 
-    public Page<MyFeedResponse> findByUser(Long id,String userName, Pageable pageable){
+    public Page<MyFeedResponse> findByUser(String userName, Pageable pageable){
 
-        userRepository.findByUserName(userName)
-                .orElseThrow( () -> new AppException(ErrorCode.USERNAME_NOT_FOUND,"존재하지 않는 회원입니다."));
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
 
-        Page<Post> postByUser = postRepository.findPostByUserId(id, pageable);
+        Page<Post> postByUser = postRepository.findPostByUserId(user.getId(), pageable);
         Page<MyFeedResponse> postSearchResponses = MyFeedResponse.toDtoList(postByUser);
         return postSearchResponses;
     }
