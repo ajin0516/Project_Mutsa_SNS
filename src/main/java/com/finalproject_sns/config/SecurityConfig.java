@@ -2,7 +2,6 @@ package com.finalproject_sns.config;
 
 import com.finalproject_sns.config.filter.JwtTokenFilter;
 import com.finalproject_sns.service.UserService;
-import com.finalproject_sns.utils.CustomAccessDeniedHandler;
 import com.finalproject_sns.utils.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
