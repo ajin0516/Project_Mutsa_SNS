@@ -51,4 +51,11 @@ public class PostController {
         PostResponse deletePost = postService.deletePost(postId, userName);
         return Response.success(deletePost);
     }
+
+    @GetMapping("/my")
+    public Response<Page<MyFeedResponse>> findByUser(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable,Long id, Authentication authentication) {
+        String userName = authentication.getName();
+        Page<MyFeedResponse> findByUserId = postService.findByUser(id, userName, pageable);
+        return Response.success(findByUserId);
+    }
 }

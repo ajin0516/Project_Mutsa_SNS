@@ -4,10 +4,7 @@ package com.finalproject_sns.service;
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.UserRole;
-import com.finalproject_sns.domain.dto.post.PostModifyRequest;
-import com.finalproject_sns.domain.dto.post.PostRequest;
-import com.finalproject_sns.domain.dto.post.PostResponse;
-import com.finalproject_sns.domain.dto.post.PostSearchResponse;
+import com.finalproject_sns.domain.dto.post.*;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.repository.PostRepository;
@@ -18,6 +15,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 
 @Service
@@ -102,5 +101,13 @@ public class PostService {
         }
     }
 
+    public Page<MyFeedResponse> findByUser(Long id,String userName, Pageable pageable){
 
+        userRepository.findByUserName(userName)
+                .orElseThrow( () -> new AppException(ErrorCode.USERNAME_NOT_FOUND,"존재하지 않는 회원입니다."));
+
+        Page<Post> postByUser = postRepository.findPostByUserId(id, pageable);
+        Page<MyFeedResponse> postSearchResponses = MyFeedResponse.toDtoList(postByUser);
+        return postSearchResponses;
+    }
 }
