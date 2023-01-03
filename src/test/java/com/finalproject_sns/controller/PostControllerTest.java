@@ -1,23 +1,27 @@
 package com.finalproject_sns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject_sns.domain.dto.post.PostRequest;
-import com.finalproject_sns.domain.dto.post.PostResponse;
-import com.finalproject_sns.domain.dto.post.PostSearchResponse;
+import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.dto.post.*;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.service.PostService;
+import com.finalproject_sns.utils.JwtTokenUtil;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -53,6 +57,28 @@ class PostControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+
+    MyFeedResponse myFeedResponse = MyFeedResponse.builder()
+            .id(1L)
+            .title("testTitle")
+            .body("testBody")
+            .userName("testUser")
+            .createAt(LocalDateTime.now())
+            .build();
+
+    private String token;
+    @Value("${jwt.secret.token}")
+    private String secretKey;
+
+    public final LocalDateTime times = LocalDateTime.now();
+
+    @BeforeEach
+    void getToken() {
+        long expireTimeMs = 1000 * 60 * 60;
+        token = JwtTokenUtil.createToken("user1", secretKey, System.currentTimeMillis() + expireTimeMs);
+    }
+
 
     @Test
     @DisplayName("등록 성공")
@@ -98,6 +124,52 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("등록 실패 - 로그인 X(Token X)")
+    void post_fail1_noToken() throws Exception {
+
+        PostRequest postRequest = PostRequest.builder()
+                .title("안녕")
+                .body("안녕하세요")
+                .build();
+
+        when(postService.create(any(),any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"토큰이 존재하지 않습니다."));
+
+        mockMvc.perform(post("/api/v1/posts")
+                        .with(csrf())
+                        .header(HttpHeaders.AUTHORIZATION,"")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("등록 실패 - 로그인 X(invalid_token)")
+    void post_fail_invalid_token() throws Exception {
+
+        User user = User.builder()
+                .userName("testUser")
+                .password("123")
+                .build();
+
+        PostRequest postRequest = PostRequest.builder()
+                .title("testTitle")
+                .body("안녕하세요")
+                .build();
+
+        token = JwtTokenUtil.createToken(user.getUserName(), secretKey, System.currentTimeMillis());
+        when(postService.create(any(),any())).thenThrow(new AppException(ErrorCode.INVALID_TOKEN,"유효하지 않은 Token입니다."));
+
+        mockMvc.perform(post("/api/v1/posts")
+                        .with(csrf())
+                        .header(HttpHeaders.AUTHORIZATION,token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("단건 조회 성공")
     @WithMockUser // Security 적용해서 없으면 안됨
     void post_findOne_success() throws Exception {
@@ -131,7 +203,7 @@ class PostControllerTest {
     @WithMockUser // 권한 부여
     void post_modify_success() throws Exception {
 
-        PostRequest postRequest = PostRequest.builder()
+        PostModifyRequest postModifyRequest = PostModifyRequest.builder()
                 .title("수정할게")
                 .body("수정한다?")
                 .build();
@@ -144,7 +216,7 @@ class PostControllerTest {
         mockMvc.perform(put("/api/v1/posts/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                        .content(objectMapper.writeValueAsBytes(postModifyRequest)))
                 .andExpect(jsonPath("$.result.message").exists())
                 .andExpect(jsonPath("$.result.postId").exists())
                 .andDo(print())
@@ -156,7 +228,7 @@ class PostControllerTest {
     @WithAnonymousUser // 인증되지 않은 사용자
     void post_modify_fail1() throws Exception {
 
-        PostRequest postRequest = PostRequest.builder()
+        PostModifyRequest postModifyRequest = PostModifyRequest.builder()
                 .title("안녕")
                 .body("안녕하세요")
                 .build();
@@ -166,7 +238,7 @@ class PostControllerTest {
         mockMvc.perform(put("/api/v1/posts/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                        .content(objectMapper.writeValueAsBytes(postModifyRequest)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -176,7 +248,7 @@ class PostControllerTest {
     @WithMockUser
     void post_modify_fail2() throws Exception {
 
-        PostRequest postRequest = PostRequest.builder()
+        PostModifyRequest postModifyRequest = PostModifyRequest.builder()
                 .title("안녕")
                 .body("안녕하세요")
                 .build();
@@ -186,7 +258,7 @@ class PostControllerTest {
         mockMvc.perform(put("/api/v1/posts/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(postRequest)))
+                        .content(objectMapper.writeValueAsBytes(postModifyRequest)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
@@ -251,7 +323,6 @@ class PostControllerTest {
                 .andExpect(status().is(ErrorCode.DATABASE_ERROR.getHttpStatus().value()));
     }
 
-    // 전체 조회 처리 못함
     @Test
     @DisplayName("조회 성공")
     @WithMockUser
@@ -275,5 +346,37 @@ class PostControllerTest {
         assertEquals(Sort.by(Sort.Direction.DESC,"createAt"),pageRequest.getSort());
         assertEquals(3,pageRequest.getPageSize());
         assertEquals(0,pageRequest.getPageNumber());
+    }
+
+
+    @Test
+    @DisplayName("마이피드 조회 성공")
+    @WithMockUser // 인증된 사용자
+    void my_feed_success() throws Exception {
+
+        when(postService.findByUser(any(), any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(myFeedResponse)))
+                .andExpect(status().isOk())  // 200
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("마이피드 조회 실패")
+    @WithAnonymousUser // 인증되지 않은 사용자(익명)
+    void my_feed_fail_not_login() throws Exception {
+
+        when(postService.findByUser(any(), any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(myFeedResponse)))
+                .andExpect(status().isUnauthorized())  // 401
+                .andDo(print());
+
     }
 }
