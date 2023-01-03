@@ -38,4 +38,26 @@ public class CommentService {
         Comment saveComment = commentRepository.save(commentCreateRequest.toEntity(post));
         return CommentCreateResponse.of(saveComment);
     }
+
+    public CommentUpdateResponse update(CommentUpdateRequest commentUpdateRequest, String userName, Long postId, Long id) {
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
+
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 댓글은 존재하지 않습니다"));
+
+        // 작성자 불일치
+        log.info("userName={}",userName);
+        log.info("comment.getUser().getUserName()={}",comment.getUser().getUserName());
+        if (!userName.equals(comment.getUser().getUserName())) {
+            throw new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다.");
+        }
+
+        comment.update(commentUpdateRequest.getComment());
+        commentRepository.save(comment);
+        return CommentUpdateResponse.of(comment);
+    }
 }

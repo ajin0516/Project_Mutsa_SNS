@@ -25,4 +25,11 @@ public class CommentController {
         CommentCreateResponse commentCreateResponse = commentService.create(commentCreateRequest, userName, postsId);
         return Response.success(commentCreateResponse);
     }
+
+    @PutMapping("/posts/{postId}/comments/{id}")
+    public Response<CommentUpdateResponse> update(@RequestBody CommentUpdateRequest commentUpdateRequest, @PathVariable Long postId, @PathVariable Long id, Authentication authentication) {
+        String userName = authentication.getName();
+        CommentUpdateResponse commentUpdateResponse = commentService.update(commentUpdateRequest, userName, postId,id);
+        return Response.success(commentUpdateResponse);
+    }
 }

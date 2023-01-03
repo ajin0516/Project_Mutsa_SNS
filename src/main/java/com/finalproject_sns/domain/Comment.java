@@ -30,4 +30,7 @@ public class Comment extends BaseEntity{
     private User user;
 
 
+    public void update(String comment) {
+        this.comment = comment;
+    }
 }
