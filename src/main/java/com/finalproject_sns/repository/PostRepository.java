@@ -1,7 +1,6 @@
 package com.finalproject_sns.repository;
 
 import com.finalproject_sns.domain.Post;
-import com.finalproject_sns.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
