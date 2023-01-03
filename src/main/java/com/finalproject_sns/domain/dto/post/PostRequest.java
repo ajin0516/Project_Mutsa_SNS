@@ -23,6 +23,4 @@ public class PostRequest {
                 .user(user)
                 .build();
     }
-
-
 }
