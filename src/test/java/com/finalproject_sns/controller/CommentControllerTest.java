@@ -1,9 +1,10 @@
 package com.finalproject_sns.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject_sns.domain.Comment;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateRequest;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateResponse;
+import com.finalproject_sns.domain.dto.comment.delete.CommentDeleteResponse;
 import com.finalproject_sns.domain.dto.comment.list.CommentListResponse;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
@@ -193,7 +194,6 @@ class CommentControllerTest {
                 .andDo(print());
     }
 
-
     @Nested
     @DisplayName("댓글 목록 조회")
     class CommentList {
@@ -245,5 +245,78 @@ class CommentControllerTest {
                     .andExpect(status().isOk())
                     .andDo(print());
         }
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    @WithMockUser
+    void comment_delete_success() throws Exception {
+
+        CommentDeleteResponse commentDeleteResponse = CommentDeleteResponse.builder().message("댓글 삭제 완료").id(1L).build();
+
+        when(commentService.delete(any(), any(), any())).thenReturn(commentDeleteResponse);
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(commentDeleteResponse)))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 인증 X")
+    @WithAnonymousUser
+    void comment_delete_fail_Unauthorized() throws Exception {
+
+        when(commentService.delete(any(), any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다."));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 포스트 없음")
+    @WithMockUser
+    void comment_delete_fail_no_Post() throws Exception {
+
+        when(commentService.delete(any(), any(), any())).thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 포스트입니다."));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 작성자 불일치")
+    @WithMockUser
+    void comment_delete_fail_not_match() throws Exception {
+
+        when(commentService.delete(any(), any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다."));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - DB 에러")
+    @WithMockUser
+    void comment_delete_fail_db() throws Exception {
+
+        when(commentService.delete(any(), any(), any())).thenThrow(new AppException(ErrorCode.DATABASE_ERROR, "데이버 베이스 에러입니다."));
+
+        mockMvc.perform(delete("/api/v1/posts/1/comments/1")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andDo(print());
     }
 }
