@@ -21,7 +21,14 @@ server:
     encoding:
       force-response: true
 
+
 jwt:
   token:
     secret: hello
-
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
