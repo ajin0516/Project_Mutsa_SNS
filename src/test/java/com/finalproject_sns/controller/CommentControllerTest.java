@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -76,24 +77,24 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("댓글 등록 실패 - user 없음")
-    @WithMockUser
+    @DisplayName("댓글 등록 실패 - 로그인 하지 않은 사용")
+    @WithAnonymousUser
     void comment_fail_not_login() throws Exception {
 
-        when(commentService.create(any(), any(), any())).thenThrow(new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
+        when(commentService.create(any(), any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다."));
 
         mockMvc.perform(post("/api/v1/posts/2/comments")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(new CommentCreateRequest())))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isUnauthorized())
                 .andDo(print());
     }
 
     @Test
     @DisplayName("댓글 등록 실패 - post 없음")
     @WithMockUser
-    void comment_fail_not_post() throws Exception {
+    void comment_fail_no_post() throws Exception {
 
         when(commentService.create(any(), any(), any())).thenThrow(new AppException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 포스트입니다."));
 
@@ -136,8 +137,8 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("수정 실패 - 인증 실패")
-    @WithMockUser
-    void comment_fail_unauthorized() throws Exception {
+    @WithAnonymousUser
+    void comment_update_fail_unauthorized() throws Exception {
 
         when(commentService.update(any(), any(), any(), any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"인증 실패"));
 
@@ -150,11 +151,11 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("수정 실패 - 댓글 불일치")
+    @DisplayName("수정 실패 - 댓글 없음")
     @WithMockUser
-    void comment_fail_not_comment() throws Exception {
+    void comment_update_fail_no_comment() throws Exception {
 
-        when(commentService.update(any(),any(),any(),any())).thenThrow(new AppException(ErrorCode.POST_NOT_FOUND,"해당 댓글은 존재하지 않습니다."));
+        when(commentService.update(any(),any(),any(),any())).thenThrow(new AppException(ErrorCode.COMMENT_NOT_FOUND,"해당 댓글은 존재하지 않습니다."));
 
         mockMvc.perform(put("/api/v1/posts/2/comments/1")
                         .with(csrf())
@@ -167,7 +168,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("수정 실패 - 작성자 불일치")
     @WithMockUser
-    void comment_fail_not_user() throws Exception {
+    void comment_update_fail_not_match() throws Exception {
         when(commentService.update(any(),any(),any(),any())).thenThrow(new AppException(ErrorCode.INVALID_PERMISSION,"사용자 권한이 없습니다."));
 
         mockMvc.perform(put("/api/v1/posts/2/comments/1")
@@ -181,7 +182,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("수정 실패 - 데이터 베이스 에러")
     @WithMockUser
-    void comment_fail_db() throws Exception {
+    void comment_update_fail_db() throws Exception {
         when(commentService.update(any(),any(),any(),any())).thenThrow(new AppException(ErrorCode.DATABASE_ERROR,"데이터 베이스 에러입니다."));
 
         mockMvc.perform(put("/api/v1/posts/2/comments/1")
