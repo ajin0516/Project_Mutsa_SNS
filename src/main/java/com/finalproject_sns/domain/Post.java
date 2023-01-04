@@ -1,6 +1,8 @@
 package com.finalproject_sns.domain;
 
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
@@ -15,7 +17,8 @@ import static javax.persistence.FetchType.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+@Where(clause = "deleted_at = false") // 조회 시 사용
+@SQLDelete(sql = "UPDATE post SET deleted_at=true WHERE post_id = ?") // 삭제가 발생하면 쿼리 실행
 public class Post extends BaseEntity {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +31,15 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-//    @OneToMany(mappedBy = "post")
-//    private List<Comment> comments = new ArrayList<>();
+    // 부모 엔티티 삭제 자식 엔티티 삭제
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @Column(name = "deleted_at")
+    private boolean deletedAt = Boolean.FALSE;
 
     public void update(String title, String body) {
         this.title = title;
         this.body = body;
     }
-
 }
