@@ -3,6 +3,7 @@ package com.finalproject_sns.controller;
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateRequest;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateResponse;
+import com.finalproject_sns.domain.dto.comment.delete.CommentDeleteResponse;
 import com.finalproject_sns.domain.dto.comment.list.CommentListResponse;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
@@ -46,5 +47,13 @@ public class CommentController {
     public Response<Page<CommentListResponse>> commentList(@PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long postId) {
         Page<CommentListResponse> commentListResponses = commentService.commentList(postId, pageable);
         return Response.success(commentListResponses);
+    }
+
+    @ApiOperation(value = "댓글 삭제", notes = "Token 필요, 작성자만 삭제 가능")
+    @DeleteMapping("/posts/{postsId}/comments/{id}")
+    public Response<CommentDeleteResponse> delete(@PathVariable Long postsId, @PathVariable Long id, Authentication authentication) {
+        String userName = authentication.getName();
+        CommentDeleteResponse deleteComment = commentService.delete(userName, postsId, id);
+        return Response.success(deleteComment);
     }
 }
