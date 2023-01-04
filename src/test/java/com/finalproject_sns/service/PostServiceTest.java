@@ -2,6 +2,7 @@ package com.finalproject_sns.service;
 
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.dto.post.PostModifyRequest;
 import com.finalproject_sns.domain.dto.post.PostRequest;
 import com.finalproject_sns.domain.dto.post.PostSearchResponse;
 import com.finalproject_sns.exception.ErrorCode;
@@ -99,7 +100,7 @@ public class PostServiceTest {
 
         when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
 
-        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getId(),post.getUser().getUserName()));
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(), post.getBody()) ,post.getId(),post.getUser().getUserName()));
 
         assertEquals(ErrorCode.POST_NOT_FOUND, AppException1.getErrorCode());
     }
@@ -130,7 +131,7 @@ public class PostServiceTest {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(userRepository.findByUserName(user2.getUserName())).thenReturn(Optional.of(user2));
 
-        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user2.getUserName()));
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user2.getUserName()));
 
         assertEquals(ErrorCode.INVALID_PERMISSION, AppException1.getErrorCode());
     }
@@ -154,7 +155,7 @@ public class PostServiceTest {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(userRepository.findByUserName(user.getUserName())).thenReturn(Optional.empty());
 
-        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user.getUserName()));
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user.getUserName()));
 
         assertEquals(ErrorCode.USERNAME_NOT_FOUND, AppException1.getErrorCode());
     }
