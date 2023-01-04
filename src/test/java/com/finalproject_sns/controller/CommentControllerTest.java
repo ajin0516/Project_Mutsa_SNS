@@ -1,29 +1,38 @@
 package com.finalproject_sns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.finalproject_sns.domain.Comment;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateRequest;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateResponse;
+import com.finalproject_sns.domain.dto.comment.list.CommentListResponse;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.service.CommentService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,8 +51,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 등록 성공")
-    @WithMockUser
-        // 권한 O
+    @WithMockUser // 권한 O
     void comment_success() throws Exception {
 
         when(commentService.create(any(), any(), any())).thenReturn(CommentCreateResponse.builder()
@@ -100,8 +108,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 수정 성공")
-    @WithMockUser
-        // 권한 O
+    @WithMockUser// 권한 O
     void comment_update_success() throws Exception {
 
         when(commentService.update(any(), any(), any(), any())).thenReturn(CommentUpdateResponse.builder()
@@ -183,5 +190,59 @@ class CommentControllerTest {
                         .content(objectMapper.writeValueAsBytes(new CommentUpdateRequest())))
                 .andExpect(status().isInternalServerError())
                 .andDo(print());
+    }
+
+
+    @Nested
+    @DisplayName("댓글 목록 조회")
+    class CommentList {
+
+        @Test
+        @DisplayName("댓글 목록 조회 성공 - 일치 여부 검증")
+        @WithMockUser
+        public void comment_success_list1() throws Exception {
+
+            mockMvc.perform(get("/api/v1/posts/1/comments")
+                            .param("page", "0")
+                            .param("size", "10")
+                            .param("sort", "createAt,desc"))
+                    .andExpect(status().isOk());
+
+            // Pageable 타입의 ArgumentCaptor 생성(저장)
+            ArgumentCaptor<Pageable> argumentCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+            // 검증
+            verify(commentService).commentList(any(), argumentCaptor.capture());
+
+            // getValue() - 저장한 걸 사용
+            PageRequest pageRequest = (PageRequest) argumentCaptor.getValue();
+
+            assertEquals(Sort.by(Sort.Direction.DESC, "createAt"), pageRequest.getSort());
+            assertEquals(0, pageRequest.getPageNumber());
+            assertEquals(10, pageRequest.getPageSize());
+        }
+
+        @Test
+        @DisplayName("댓글 목록 조회 성공 - Basic")
+        @WithMockUser
+        public void comment_success_list2() throws Exception {
+
+            CommentListResponse commentListResponse = CommentListResponse.builder()
+                    .id(1L)
+                    .postId(1L)
+                    .comment("testComment")
+                    .userName("testName")
+                    .createAt(LocalDateTime.now())
+                    .build();
+
+            when(commentService.commentList(any(), any())).thenReturn(Page.empty());
+
+            mockMvc.perform(get("/api/v1/posts/1/comments")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(commentListResponse)))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+        }
     }
 }
