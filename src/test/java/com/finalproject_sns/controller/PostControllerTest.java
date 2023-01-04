@@ -360,7 +360,7 @@ class PostControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(myFeedResponse)))
-                .andExpect(status().isOk())  // 200
+                .andExpect(status().isOk())  // 202
                 .andDo(print());
     }
 
