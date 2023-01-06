@@ -7,6 +7,8 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 
 
+import java.time.LocalDateTime;
+
 import static javax.persistence.FetchType.*;
 
 @Builder
@@ -15,8 +17,8 @@ import static javax.persistence.FetchType.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Where(clause = "deleted_at = false") // 조회 시 사용
-@SQLDelete(sql = "UPDATE comment SET deleted_at=true WHERE comment_id =?")
+@Where(clause = "deleted_at is null") // 조회 시 사용
+@SQLDelete(sql = "UPDATE comment SET deleted_at=current_timestamp WHERE comment_id =?")
 public class Comment extends BaseEntity{
 
     @Id
@@ -34,7 +36,7 @@ public class Comment extends BaseEntity{
     private User user;
 
     @Column(name = "deleted_at")
-    private boolean deletedAt = Boolean.FALSE;
+    private LocalDateTime deletedAt = null;
 
     public void update(String comment) {
         this.comment = comment;

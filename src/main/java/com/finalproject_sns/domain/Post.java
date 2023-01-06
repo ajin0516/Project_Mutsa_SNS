@@ -6,6 +6,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +18,8 @@ import static javax.persistence.FetchType.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Where(clause = "deleted_at = false") // 조회 시 사용
-@SQLDelete(sql = "UPDATE post SET deleted_at=true WHERE post_id = ?") // 삭제가 발생하면 쿼리 실행
+@Where(clause = "deleted_at is null") // 조회 시 사용
+@SQLDelete(sql = "UPDATE post SET deleted_at=current_timestamp WHERE post_id = ?") // 삭제가 발생하면 쿼리 실행
 public class Post extends BaseEntity {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +36,11 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
     @Column(name = "deleted_at")
-    private boolean deletedAt = Boolean.FALSE;
+    private LocalDateTime deletedAt = null;
 
     public void update(String title, String body) {
         this.title = title;
