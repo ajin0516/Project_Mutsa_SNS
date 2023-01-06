@@ -17,7 +17,7 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/{postId}/likes")
-    @ApiOperation(value = "좋아요 누르기", notes = "Token필요, 좋아요/좋아요 취소/에러")
+    @ApiOperation(value = "좋아요 누르기", notes = "Token필요, 좋아요/좋아요 취소")
     public Response likeClick(@PathVariable Long postId, Authentication authentication) {
         String userName = authentication.getName();
         log.info("userName={}", userName);
