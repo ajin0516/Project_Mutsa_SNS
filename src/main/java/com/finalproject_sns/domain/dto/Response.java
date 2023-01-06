@@ -18,4 +18,8 @@ public class Response<T> {
         return new Response("SUCCESS", result);
     }
 
+    public static Response success(String result) {
+        return new Response("SUCCESS", result);
+    }
+
 }
