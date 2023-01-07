@@ -40,7 +40,7 @@ public class PostService {
                 .postId(savePost.getId())
                 .build();
     }
-
+    @Transactional(readOnly = true)
     public PostSearchResponse findOnePost(Long postId) {
 
         // 게시글 존재하지 않을 떄
@@ -49,6 +49,7 @@ public class PostService {
         return PostSearchResponse.toDto(post);
     }
 
+    @Transactional(readOnly = true)
     public Page<PostSearchResponse> findAllPost(Pageable pageable) {
         Page<Post> findAll = postRepository.findAll(pageable);
         Page<PostSearchResponse> postDtoList = PostSearchResponse.toDtoList(findAll);

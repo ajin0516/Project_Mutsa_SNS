@@ -71,6 +71,7 @@ public class CommentService {
         return CommentUpdateResponse.of(comment);
     }
 
+    @Transactional(readOnly = true)
     public Page<CommentListResponse> commentList(Long id, Pageable pageable) {
 
         Post post = postRepository.findById(id)

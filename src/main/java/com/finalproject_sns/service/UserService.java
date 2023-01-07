@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -27,8 +28,9 @@ public class UserService {
     @Value("${jwt.token.secret}")
     private String secretKey;
 
-    private long expireTimeMs = 1000 * 60 * 60L;
+    private long expireTimeMs = 1000 * 60 * 180L;
 
+    @Transactional
     public UserDto join(UserJoinRequest requestDto) {
         // 회원 중복 체크 -> 중복이면 Exception 발생
         userRepository.findByUserName(requestDto.getUserName())
@@ -46,6 +48,7 @@ public class UserService {
 
     }
 
+    @Transactional
     public String login(String userName, String password) {
         // username 여부 확인
         User user = userRepository.findByUserName(userName).orElseThrow(
