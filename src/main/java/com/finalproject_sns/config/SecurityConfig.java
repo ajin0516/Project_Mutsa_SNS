@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.PUT,"/api/**").authenticated() // put는 인가자만 허용
                 .antMatchers(HttpMethod.POST,"/api/v1/**").authenticated() // 모든 post요청 권한 막기
                 .antMatchers(HttpMethod.GET,"/api/v1/posts/my").authenticated() // myFeed 조회 시 본인만 접근 가능
+                .antMatchers(HttpMethod.GET,"/api/v1/alarms").authenticated() // 알람은 인가자만 허용
                 .antMatchers("/api/v1/users/*/role/change").access("hasRole('ADMIN')")
                 .and()
                 .sessionManagement()

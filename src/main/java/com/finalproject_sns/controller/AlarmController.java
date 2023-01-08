@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/alarms")
+@RequestMapping("/api/v1/alarms")
 @RequiredArgsConstructor
 public class AlarmController {
 
     private final AlarmService alarmService;
 
     @GetMapping
-    public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable, Authentication authentication) {
 //    public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<AlarmResponse> list = alarmService.findList(pageable);
+        Page<AlarmResponse> list = alarmService.findAlarmList(pageable, authentication.getName());
         return Response.success(list);
     }
 }
