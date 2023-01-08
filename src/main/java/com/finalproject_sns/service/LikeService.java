@@ -1,10 +1,9 @@
 package com.finalproject_sns.service;
 
-import com.finalproject_sns.domain.Like;
-import com.finalproject_sns.domain.Post;
-import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.*;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.exception.ErrorCode;
+import com.finalproject_sns.repository.AlarmRepository;
 import com.finalproject_sns.repository.LikeRepository;
 import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
@@ -22,6 +21,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final AlarmRepository alarmRepository;
 
     @Transactional
     public String likeClick(Long postId, String userName) {
@@ -34,48 +34,32 @@ public class LikeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 포스트입니다."));
 
-
-//          Optional<Like> likePost = likeRepository.findByPostAndUser(post, user);
-//          log.info("likePost={}", likePost);
-//
-//        if (likePost.isPresent() && likePost.get().isDeletedAt() == false) {
-//            log.info("likePost.get().isDeletedAt()={}",likePost.get().isDeletedAt());
-//            log.info("delete 작동 중");
-//            likeRepository.delete(Like()); // true(1)
-//            return "좋아요를 취소했습니다.";
-//        }
-//        if (likePost.isPresent() && likePost.get().isDeletedAt() != false) {
-//            likeRepository.save(Like.saveAndDelete(user, post)); // false(0)
-//            throw new AppException(ErrorCode.ALREADY_LIKE_CLICK, "한번 취소한 좋아요는 다시 할 수 없숴!");
-//        }
-
-//        likeRepository.save(Like.saveAndDelete(user, post));
-//        return "좋아요를 눌렀습니다.";
-
-//    좋아요 안 누른 상태
-//    public boolean isNotAlreadyLike(User user, Post post) {
-//       return likeRepository.findByPostAndUser(post, user).isEmpty();
-//    }
-
-//        log.info("likePost.get().isDeletedAt()",likePost.get().isDeletedAt());
-
         Optional<Like> likePost = likeRepository.findByUserAndPost(user, post);
+
+//        Optional<Alarm> alarm = alarmRepository.findById(user.getId());
+//        Alarm alarm = alarmRepository.findByUserAndTargetId(user, post.getId());
+        Alarm alarm = alarmRepository.findByUserAndTargetId(user ,post.getId());
+
+        String message = AlarmType.NEW_LIKE_ON_POST.getMessage();
+        AlarmType alarmType = AlarmType.NEW_LIKE_ON_POST;
 
         if(!likePost.isPresent()){
             likeRepository.save(new Like(user, post)); // 상태 : null
+            alarmRepository.save(new Alarm(user,post,message,alarmType));
             return "좋아요를 눌렀습니다.";
         }else  {
             if (likePost.get().getDeletedAt() == null) {
                 likeRepository.delete(likePost.get()); // get()을 써줘야 삭제가 된다....
+                alarmRepository.delete(alarm);
                 return "좋아요를 취소했습니다."; // 상태 : 현재시간
             }else {
                 likeRepository.reSave(likePost.get().getId()); // 상태 : null
+                alarmRepository.reSave(alarm.getId());
                 return "좋아요를 눌렀습니다.";
             }
         }
-
     }
-
+    @Transactional(readOnly = true)
     public Integer likeCount(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 포스트가 존재하지 않습니다."));
