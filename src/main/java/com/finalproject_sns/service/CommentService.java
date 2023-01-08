@@ -1,8 +1,6 @@
 package com.finalproject_sns.service;
 
-import com.finalproject_sns.domain.Comment;
-import com.finalproject_sns.domain.Post;
-import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.*;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateRequest;
 import com.finalproject_sns.domain.dto.comment.create.CommentCreateResponse;
 import com.finalproject_sns.domain.dto.comment.delete.CommentDeleteResponse;
@@ -11,6 +9,7 @@ import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
 import com.finalproject_sns.exception.AppException;
 import com.finalproject_sns.exception.ErrorCode;
+import com.finalproject_sns.repository.AlarmRepository;
 import com.finalproject_sns.repository.CommentRepository;
 import com.finalproject_sns.repository.PostRepository;
 import com.finalproject_sns.repository.UserRepository;
@@ -32,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final AlarmRepository alarmRepository;
 
     @Transactional
     public CommentCreateResponse create(CommentCreateRequest commentCreateRequest, String userName, Long postId) {
@@ -41,10 +41,14 @@ public class CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "해당 글은 존재하지 않습니다."));
 
         // user 존재하지 않을 떄
-        userRepository.findByUserName(userName)
+        User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
+        String message = AlarmType.NEW_COMMENT_ON_POST.getMessage();
+        AlarmType alarmType = AlarmType.NEW_COMMENT_ON_POST;
+
         Comment saveComment = commentRepository.save(commentCreateRequest.toEntity(post));
+        alarmRepository.save(new Alarm(user, post, message, alarmType));
         return CommentCreateResponse.of(saveComment);
     }
 
@@ -95,7 +99,11 @@ public class CommentService {
         if (!comment.getUser().getUserName().equals(userName)) {
             throw new AppException(ErrorCode.INVALID_PERMISSION, "작성자만 삭제 가능합니다.");
         }
+
+        Alarm alarm = alarmRepository.findByUserAndTargetId(user, post.getId());
+
         commentRepository.delete(comment);
+        alarmRepository.delete(alarm);
         return CommentDeleteResponse.toDto(comment);
     }
 }
