@@ -27,8 +27,9 @@ public class AlarmService {
     public Page<AlarmResponse> findAlarmList(Pageable pageable, String userName) {
 //        Optional<Alarm> alarmUser = alarmRepository.findByUser
 //        Page<Alarm> alarmList = alarmRepository.findByDeletedAtNull( pageable);
-         userRepository.findByUserName(userName).orElseThrow( () -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 앟는 유저입니다."));
-        Page<Alarm> alarmList = alarmRepository.findByDeletedAtNull(pageable);
+        User user = userRepository.findByUserName(userName).orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 앟는 유저입니다."));
+//        Page<Alarm> alarmList = alarmRepository.findByDeletedAtNull(pageable);
+        Page<Alarm> alarmList = alarmRepository.findByUserIdAndDeletedAtNull(user.getId(), pageable);
         Page<AlarmResponse> alarmResponses = AlarmResponse.toDtoList(alarmList);
         return alarmResponses;
     }
