@@ -39,11 +39,11 @@ public class Alarm extends BaseEntity{
     private String text;
 
 
-    public Alarm (User user, Post post, String message, AlarmType alarmType) {
+    public Alarm (User user, Post post, AlarmType alarmType) {
         this.fromUserId = user.getId();
         this.targetId = post.getId();
-        this.text = message;
+        this.text = alarmType.getMessage();
         this.alarmType = alarmType;
-        this.user = user;
+        this.user = post.getUser();
     }
 }

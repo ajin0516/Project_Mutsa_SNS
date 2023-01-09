@@ -3,9 +3,6 @@ package com.finalproject_sns.domain.dto.alarm;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.finalproject_sns.domain.Alarm;
 import com.finalproject_sns.domain.AlarmType;
-import com.finalproject_sns.domain.Post;
-import com.finalproject_sns.domain.User;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
@@ -39,23 +36,11 @@ public class AlarmResponse {
         Page<AlarmResponse> alarmDtoList = alarmList.map(a -> AlarmResponse.builder()
                 .id(a.getId())
                 .alarmType(a.getAlarmType())
-                .fromUserId(a.getUser().getId())
+                .fromUserId(a.getFromUserId())
                 .targetId(a.getTargetId())
                 .text(a.getText())
                 .createdAt(a.getCreateAt())
                 .build());
         return alarmDtoList;
     }
-
-    public AlarmResponse likeOf(User user, Post post) {
-        return AlarmResponse.builder()
-                .id(id)
-                .alarmType(AlarmType.NEW_LIKE_ON_POST)
-                .targetId(post.getId())
-                .fromUserId(user.getId())
-                .text(alarmType.getMessage())
-                .createdAt(createdAt)
-                .build();
-    }
-
 }

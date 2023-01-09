@@ -1,6 +1,7 @@
 package com.finalproject_sns.repository;
 
 import com.finalproject_sns.domain.Alarm;
+import com.finalproject_sns.domain.Like;
 import com.finalproject_sns.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,8 @@ public interface AlarmRepository extends JpaRepository<Alarm,Long> {
 
     Alarm findByUserAndTargetId(User user, Long targetId);
 
+    Alarm findAlarmByUserAndId(User user, Long id);
+
 //    Alarm findByUser(User user);
 
 
@@ -24,7 +27,10 @@ public interface AlarmRepository extends JpaRepository<Alarm,Long> {
 //    Page<Alarm> findByDeletedAtNull(Pageable pageable);
 
 
-    Page<Alarm> findByUserIdAndDeletedAtNull(Long userId, Pageable pageable);
+    // 회원본인이 쓴 글에 대해서만 목록을 가져와야 함(잘못됨)
+    Page<Alarm> findByUserAndDeletedAtNull(User user, Pageable pageable);
+//    Page<Alarm> findByUserIdAndDeletedAtNull(Long id, Pageable pageable);
+
 
 //    Page<Alarm> findByUserNameAndDeletedAtNull(String userName, Pageable pageable);
 

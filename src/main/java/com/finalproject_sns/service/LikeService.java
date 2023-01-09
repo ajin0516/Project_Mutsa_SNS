@@ -38,26 +38,25 @@ public class LikeService {
 
 //        Optional<Alarm> alarm = alarmRepository.findById(user.getId());
 //        Alarm alarm = alarmRepository.findByUserAndTargetId(user, post.getId());
-        Alarm alarm = alarmRepository.findByUserAndTargetId(user ,post.getId());
 
-        String message = AlarmType.NEW_LIKE_ON_POST.getMessage();
-        AlarmType alarmType = AlarmType.NEW_LIKE_ON_POST;
+        Alarm alarm = alarmRepository.findByUserAndTargetId(post.getUser() ,post.getId());
 
-        if(!likePost.isPresent()){
-            likeRepository.save(new Like(user, post)); // 상태 : null
-            alarmRepository.save(new Alarm(user,post,message,alarmType));
-            return "좋아요를 눌렀습니다.";
-        }else  {
-            if (likePost.get().getDeletedAt() == null) {
-                likeRepository.delete(likePost.get()); // get()을 써줘야 삭제가 된다....
-                alarmRepository.delete(alarm);
-                return "좋아요를 취소했습니다."; // 상태 : 현재시간
-            }else {
-                likeRepository.reSave(likePost.get().getId()); // 상태 : null
-                alarmRepository.reSave(alarm.getId());
-                return "좋아요를 눌렀습니다.";
-            }
+        log.info("user.getId()={}",user.getId());
+        if (likePost.isPresent() && likePost.get().getDeletedAt() == null) {
+            likeRepository.delete(likePost.get());
+            alarmRepository.delete(alarm);
+            return "좋아요를 취소했습니다.";  // 상태 : 삭제 시간
+        } else if (likePost.isPresent() && likePost.get().getDeletedAt() != null) {
+            likeRepository.reSave(likePost.get().getId());
+            alarmRepository.reSave(alarm.getId());
+            return "좋아요를 눌렀습니다.";  // 상태 : null
         }
+
+        likeRepository.save(new Like(user, post)); // 상태 : null
+        alarmRepository.save(new Alarm(user,post,AlarmType.NEW_LIKE_ON_POST));
+        return "좋아요를 눌렀습니다.";
+
+
     }
     @Transactional(readOnly = true)
     public Integer likeCount(Long postId) {
