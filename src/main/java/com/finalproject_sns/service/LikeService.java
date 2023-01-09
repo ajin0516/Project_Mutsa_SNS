@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,25 +40,32 @@ public class LikeService {
 //        Optional<Alarm> alarm = alarmRepository.findById(user.getId());
 //        Alarm alarm = alarmRepository.findByUserAndTargetId(user, post.getId());
 
-        Alarm alarm = alarmRepository.findByUserAndTargetId(post.getUser() ,post.getId());
+        Alarm alarm = alarmRepository.findByUserAndTargetId(post.getUser(), post.getId());
 
-        log.info("user.getId()={}",user.getId());
+        log.info("user.getId()={}", user.getId());
         if (likePost.isPresent() && likePost.get().getDeletedAt() == null) {
             likeRepository.delete(likePost.get());
-            alarmRepository.delete(alarm);
+            if(user.getId() != post.getUser().getId()) { // 본인의 포스트가 아닌 다른 회원의 포스트에 좋아요 취소 시 삭제( 알람 조회 시 본인한테 좋아요한 건 제외시키기 위함)
+                alarmRepository.delete(alarm);
+            }
             return "좋아요를 취소했습니다.";  // 상태 : 삭제 시간
         } else if (likePost.isPresent() && likePost.get().getDeletedAt() != null) {
             likeRepository.reSave(likePost.get().getId());
-            alarmRepository.reSave(alarm.getId());
+            if( user.getId() != post.getUser().getId()) {  // 본인의 포스트가 아닌 다른 회원의 포스트에 좋아요 시 재저장( 알람 조회 시 본인한테 좋아요한 건 제외시키기 위함)
+                alarmRepository.reSave(alarm.getId());
+            }
             return "좋아요를 눌렀습니다.";  // 상태 : null
         }
 
-        likeRepository.save(new Like(user, post)); // 상태 : null
-        alarmRepository.save(new Alarm(user,post,AlarmType.NEW_LIKE_ON_POST));
+        log.info("user.getId()={}",user.getId());
+        log.info("post.getUser().getId()={}",post.getUser().getId());
+        likeRepository.save(new Like(user, post));
+        if( user.getId() != post.getUser().getId()) {  // 본인의 포스트가 아닌 다른 회원의 포스트에 좋아요 시 저장( 알람 조회 시 본인한테 좋아요한 건 제외시키기 위함)
+            alarmRepository.save(new Alarm(user, post, AlarmType.NEW_LIKE_ON_POST));
+        }
         return "좋아요를 눌렀습니다.";
-
-
     }
+
     @Transactional(readOnly = true)
     public Integer likeCount(Long postId) {
         Post post = postRepository.findById(postId)

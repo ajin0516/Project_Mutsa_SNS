@@ -45,8 +45,10 @@ public class CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "은 존재하지 않는 회원입니다."));
 
 
-        Comment saveComment = commentRepository.save(commentCreateRequest.toEntity(post,user));
-        alarmRepository.save(new Alarm(user, post, AlarmType.NEW_COMMENT_ON_POST));
+        Comment saveComment = commentRepository.save(commentCreateRequest.toEntity(post, user));
+        if (user.getId() != post.getUser().getId()) {  // 본인이 작성한 포스트에 본인이 댓글을 남기면 알람 저장 안함
+            alarmRepository.save(new Alarm(user, post, AlarmType.NEW_COMMENT_ON_POST));
+        }
         return CommentCreateResponse.of(saveComment);
     }
 
@@ -62,8 +64,8 @@ public class CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND, "해당 댓글은 존재하지 않습니다"));
 
         // 작성자 불일치
-        log.info("userName={}",userName);
-        log.info("comment.getUser().getUserName()={}",comment.getUser().getUserName());
+        log.info("userName={}", userName);
+        log.info("comment.getUser().getUserName()={}", comment.getUser().getUserName());
         if (!userName.equals(comment.getUser().getUserName())) {
             throw new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다.");
         }
@@ -79,7 +81,7 @@ public class CommentService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "포스트가 존재하지 않습니다."));
 
-        log.info("post={}",post);
+        log.info("post={}", post);
         Page<Comment> byPostId = commentRepository.findByPostId(post.getId(), pageable);
         Page<CommentListResponse> commentListResponses = CommentListResponse.toDtoList(byPostId);
         return commentListResponses;
@@ -91,19 +93,21 @@ public class CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND, "존재하지 않는 포스트입니다."));
         User user = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, userName + "는 존재하지 않는 회원입니다."));
-        log.info("commentId={}",commentId);
+        log.info("commentId={}", commentId);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND, "존재하지 않는 댓글입니다."));
 
         if (!comment.getUser().getUserName().equals(userName)) {
             throw new AppException(ErrorCode.INVALID_PERMISSION, "작성자만 삭제 가능합니다.");
         }
-        log.info("post.getUser().getId()={}",post.getUser().getId());
-        log.info("post.getId()={}",post.getId());
+        log.info("post.getUser().getId()={}", post.getUser().getId());
+        log.info("post.getId()={}", post.getId());
         Alarm alarm = alarmRepository.findByUserAndTargetId(post.getUser(), post.getId());
 
         commentRepository.delete(comment);
-        alarmRepository.delete(alarm);
+        if (user.getId() != post.getUser().getId()) { // 본인이 작성한 포스트가 아닌 다른 회원의 포스트의 댓글 시 삭제
+            alarmRepository.delete(alarm);
+        }
 
         log.info("post.getId()={}");
         return CommentDeleteResponse.toDto(comment);

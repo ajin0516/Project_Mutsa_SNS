@@ -4,6 +4,7 @@ import com.finalproject_sns.domain.Alarm;
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.domain.dto.alarm.AlarmResponse;
 import com.finalproject_sns.service.AlarmService;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,7 @@ public class AlarmController {
 
     private final AlarmService alarmService;
 
+    @ApiOperation(value = "알람 조회", notes = "Token 필요, 내가 작성한 포스트에 대한 좋아요 및 댓글 알람")
     @GetMapping
     public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable, Authentication authentication) {
 //    public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, direction = Sort.Direction.DESC) Pageable pageable) {
