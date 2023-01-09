@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,13 +18,14 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
 
 //    @Query("SELECT COUNT(*) - COUNT(deletedAt) FROM Like WHERE id= :post_id")
-    @Query("SELECT COUNT(l) FROM Like l WHERE l.post= :post AND l.deletedAt IS NULL")
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.post= :post AND l.deletedAt is null")
 //    @Query("SELECT COUNT(deletedAt) FROM Like WHERE deletedAt IS NULL")
     Integer countByPost(@Param("post") Post post);
 
+    @Transactional
     @Modifying
-    @Query("UPDATE Like l SET l.deletedAt=null WHERE l.id= :like_id")
-    void reSave(@Param("like_id") Long like_id);
+    @Query("UPDATE Like l SET l.deletedAt=null WHERE l.id= :likeId")
+    void reSave(@Param("likeId") Long likeId);
 
 
 }
