@@ -3,6 +3,7 @@ package com.finalproject_sns.controller;
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.domain.dto.post.*;
 import com.finalproject_sns.service.PostService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Api(tags = "포스트")
 public class PostController {
 
     private final PostService postService;

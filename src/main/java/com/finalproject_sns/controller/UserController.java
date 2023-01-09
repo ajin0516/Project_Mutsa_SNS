@@ -3,7 +3,9 @@ package com.finalproject_sns.controller;
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.domain.dto.user.*;
 import com.finalproject_sns.service.UserService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Slf4j
+@Api(tags = "회원")
 public class UserController {
 
     private final UserService userService;

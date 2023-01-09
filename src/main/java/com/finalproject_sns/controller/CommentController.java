@@ -8,6 +8,7 @@ import com.finalproject_sns.domain.dto.comment.list.CommentListResponse;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateRequest;
 import com.finalproject_sns.domain.dto.comment.update.CommentUpdateResponse;
 import com.finalproject_sns.service.CommentService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Api(tags = "댓글")
 public class CommentController {
 
     private final CommentService commentService;

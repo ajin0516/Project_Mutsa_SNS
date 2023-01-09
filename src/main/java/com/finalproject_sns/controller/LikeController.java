@@ -2,6 +2,7 @@ package com.finalproject_sns.controller;
 
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.service.LikeService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 @Slf4j
+@Api(tags = "좋아요")
 public class LikeController {
 
     private final LikeService likeService;

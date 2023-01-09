@@ -4,6 +4,7 @@ import com.finalproject_sns.domain.Alarm;
 import com.finalproject_sns.domain.dto.Response;
 import com.finalproject_sns.domain.dto.alarm.AlarmResponse;
 import com.finalproject_sns.service.AlarmService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/alarms")
 @RequiredArgsConstructor
+@Api(tags = "알람")
 public class AlarmController {
 
     private final AlarmService alarmService;
