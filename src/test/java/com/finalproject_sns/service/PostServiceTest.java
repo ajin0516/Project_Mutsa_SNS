@@ -2,6 +2,7 @@ package com.finalproject_sns.service;
 
 import com.finalproject_sns.domain.Post;
 import com.finalproject_sns.domain.User;
+import com.finalproject_sns.domain.UserRole;
 import com.finalproject_sns.domain.dto.post.PostModifyRequest;
 import com.finalproject_sns.domain.dto.post.PostRequest;
 import com.finalproject_sns.domain.dto.post.PostSearchResponse;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static com.finalproject_sns.exception.ErrorCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -26,8 +28,6 @@ public class PostServiceTest {
 
     PostRepository postRepository = mock(PostRepository.class);
     UserRepository userRepository = mock(UserRepository.class);
-
-
 
     @BeforeEach
     void before() {
@@ -59,7 +59,7 @@ public class PostServiceTest {
 
         AppException AppException = assertThrows(AppException.class,() -> postService.create(new PostRequest(mockPost.getTitle(),mockPost.getBody()), mockUser.getUserName()));
 
-        assertEquals(ErrorCode.USERNAME_NOT_FOUND,AppException.getErrorCode());
+        assertEquals(USERNAME_NOT_FOUND,AppException.getErrorCode());
     }
 
     @Test
@@ -86,23 +86,15 @@ public class PostServiceTest {
     @Test
     @DisplayName("수정 실패 - 포스트 없음")
     void post_modify_fail() {
-        User user = User.builder()
-                .id(1L)
-                .userName("ajin")
-                .password("1234")
-                .build();
-        Post post = Post.builder()
-                .id(1L)
-                .title("수정")
-                .body("수정 테스트")
-                .user(user)
-                .build();
+        Post mockPost = mock(Post.class);
+        User mockUser = mock(User.class);
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.empty());
+        when(postRepository.findById(mockPost.getId())).thenReturn(Optional.empty());
+        when(userRepository.findByUserName(mockUser.getUserName())).thenReturn(Optional.of(mockUser));
 
-        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(), post.getBody()) ,post.getId(),post.getUser().getUserName()));
+        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(mockPost.getTitle(), mockPost.getBody()) ,mockPost.getId(),mockUser.getUserName()));
 
-        assertEquals(ErrorCode.POST_NOT_FOUND, AppException1.getErrorCode());
+        assertEquals(POST_NOT_FOUND, AppException1.getErrorCode());
     }
 
 
@@ -113,27 +105,32 @@ public class PostServiceTest {
                 .id(1L)
                 .userName("ajin")
                 .password("1234")
+                .role(UserRole.USER)
                 .build();
 
         User user2 = User.builder()
-                .id(1L)
+                .id(2L)
                 .userName("najin")
                 .password("1234")
+                .role(UserRole.USER)
                 .build();
 
         Post post = Post.builder()
-                .id(1L)
                 .title("수정")
                 .body("수정 테스트")
                 .user(user1)
                 .build();
 
-        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        PostModifyRequest postModifyRequest = new PostModifyRequest(post.getTitle(), post.getBody());
+
         when(userRepository.findByUserName(user2.getUserName())).thenReturn(Optional.of(user2));
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
 
-        AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user2.getUserName()));
-
-        assertEquals(ErrorCode.INVALID_PERMISSION, AppException1.getErrorCode());
+        AppException AppException1 = assertThrows(
+                AppException.class,
+                () -> postService.update(postModifyRequest ,post.getId(),user2.getUserName())
+        );
+        assertEquals(INVALID_PERMISSION, AppException1.getErrorCode());
     }
 
     @Test
@@ -157,7 +154,7 @@ public class PostServiceTest {
 
         AppException AppException1 = assertThrows(AppException.class, () -> postService.update(new PostModifyRequest(post.getTitle(),post.getBody()),post.getUser().getId(),user.getUserName()));
 
-        assertEquals(ErrorCode.USERNAME_NOT_FOUND, AppException1.getErrorCode());
+        assertEquals(USERNAME_NOT_FOUND, AppException1.getErrorCode());
     }
 
     @Test
@@ -181,7 +178,7 @@ public class PostServiceTest {
 
         AppException AppException1 = assertThrows(AppException.class, () -> postService.deletePost(post.getId(),post.getUser().getUserName()));
 
-        assertEquals(ErrorCode.USERNAME_NOT_FOUND, AppException1.getErrorCode());
+        assertEquals(USERNAME_NOT_FOUND, AppException1.getErrorCode());
     }
 
     @Test
@@ -205,7 +202,6 @@ public class PostServiceTest {
 
         AppException AppException1 = assertThrows(AppException.class, () -> postService.deletePost(post.getId(),post.getUser().getUserName()));
 
-        assertEquals(ErrorCode.POST_NOT_FOUND, AppException1.getErrorCode());
+        assertEquals(POST_NOT_FOUND, AppException1.getErrorCode());
     }
-
 }
