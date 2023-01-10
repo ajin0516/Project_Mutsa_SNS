@@ -27,7 +27,6 @@ public class AlarmController {
     @ApiOperation(value = "알람 조회", notes = "Token 필요, 내가 작성한 포스트에 대한 좋아요 및 댓글 알람")
     @GetMapping
     public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable, Authentication authentication) {
-//    public Response<Page<AlarmResponse>> alarmList(@PageableDefault(size = 20, direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AlarmResponse> list = alarmService.findAlarmList(pageable, authentication.getName());
         return Response.success(list);
     }

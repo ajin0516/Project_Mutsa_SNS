@@ -15,7 +15,6 @@ import static javax.persistence.FetchType.LAZY;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-//@Where(clause = "deleted_at is null")
 @SQLDelete(sql = "UPDATE likes SET deleted_at=current_timestamp WHERE like_id = ?")
 @Table(name = "likes")
 public class Like extends BaseEntity{

@@ -16,10 +16,7 @@ import java.util.Optional;
 public interface LikeRepository extends JpaRepository<Like, Long> {
     Optional<Like> findByUserAndPost(User user,Post post);
 
-
-//    @Query("SELECT COUNT(*) - COUNT(deletedAt) FROM Like WHERE id= :post_id")
     @Query("SELECT COUNT(l) FROM Like l WHERE l.post= :post AND l.deletedAt is null")
-//    @Query("SELECT COUNT(deletedAt) FROM Like WHERE deletedAt IS NULL")
     Integer countByPost(@Param("post") Post post);
 
     @Transactional
