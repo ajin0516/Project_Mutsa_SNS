@@ -36,8 +36,8 @@ public class UserController {
 
     @ApiOperation(value = "회원 권한 변경", notes = "관리자만 가능")
     @PostMapping("{id}/role/change")
-    public Response<UserRoleResponse> changeRole(@PathVariable Long id, Authentication authentication) {
-        UserRoleResponse userRoleResponse = userService.changeRole(id, authentication.getName());
+    public Response<UserRoleResponse> changeRole(@PathVariable Long id, @RequestBody UserRoleRequest userRoleRequest, Authentication authentication) {
+        UserRoleResponse userRoleResponse = userService.changeRole(id, authentication.getName(), userRoleRequest);
         return Response.success(userRoleResponse);
     }
 }

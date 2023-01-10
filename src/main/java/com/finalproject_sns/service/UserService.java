@@ -4,6 +4,7 @@ import com.finalproject_sns.domain.User;
 import com.finalproject_sns.domain.UserRole;
 import com.finalproject_sns.domain.dto.user.UserDto;
 import com.finalproject_sns.domain.dto.user.UserJoinRequest;
+import com.finalproject_sns.domain.dto.user.UserRoleRequest;
 import com.finalproject_sns.domain.dto.user.UserRoleResponse;
 import com.finalproject_sns.exception.ErrorCode;
 import com.finalproject_sns.exception.AppException;
@@ -69,7 +70,7 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다"));
     }
 
-    public UserRoleResponse changeRole(Long id, String userName) {
+    public UserRoleResponse changeRole(Long id, String userName, UserRoleRequest userRoleRequest) {
         // 토큰을 통해 인증 된 회원 중 일치하는 name 없음
         User admin = userRepository.findByUserName(userName)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
@@ -78,17 +79,19 @@ public class UserService {
         User changeUser = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USERNAME_NOT_FOUND, "존재하지 않는 회원입니다."));
 
-        log.info("changeUser.getRole().name()={}",changeUser.getRole().name());
+        log.info("changeUser.getRole()={}",changeUser.getRole());
         log.info("admin.getRole()={}",admin.getRole());
-        if(admin.getRole().name().equals(changeUser.getRole().name())) {
+        if(changeUser.getRole().equals(UserRole.ADMIN)){
             throw new AppException(ErrorCode.INVALID_PERMISSION, changeUser.getUserName() + "님은 이미 관리자권한입니다.");
         }
-        if (admin.getRole().name().equals(UserRole.ADMIN.name())) {
+
+        if (admin.getRole().equals(UserRole.ADMIN)) {
             changeUser.upgradeAdmin(UserRole.ADMIN);
         } else {
             throw new AppException(ErrorCode.INVALID_PERMISSION, "사용자 권한이 없습니다");
         }
-        userRepository.save(changeUser);
+
+        userRepository.save(userRoleRequest.toEntity(changeUser));
 
         return UserRoleResponse.builder()
                 .message("관리자로 권한이 변경되었습니다.")
